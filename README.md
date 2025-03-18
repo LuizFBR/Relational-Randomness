@@ -4,15 +4,15 @@ Purely relational predicates that implement Pseudo-Random Number Generation (PRN
 
 ##### To-do
 
+- PrologDocs;
 - Robust PRNG tests;
 - Sampling algorithms;
 - Noise generating algorithms;
 - Implement other PRNGs (Mersenne Twister, LCG, etc...);
-- DCG argument passing.
 
 ## About
 
-This repo provides the following predicates:
+This package provides the following predicates:
 
 | Predicate          | Description |
 | ------------------ | ----------- |
@@ -22,13 +22,28 @@ This repo provides the following predicates:
 | random_bounded/4   | Random number from 0 to Max-1 |
 | random_between/5   | Random number from Min to Max-1 (Max - Min < 2^32) |
 | random_list/4      | List of N random numbers from 0 to 2^32-1 |
-| random_bounded/4   | List of N random numbers from 0 to Max-1 |
-| random_between/5   | List of N random numbers from Min to Max-1 (Max - Min < 2^32) |
+| random_boundedlist/5   | List of N random numbers from 0 to Max-1 |
+| random_betweenlist/6   | List of N random numbers from Min to Max-1 (Max - Min < 2^32) |
 | probability/4      | Reifies the truth value of Probability/Precision chance of an event happening into T |
+
+And the following DCGs:
+
+| Predicate                 | Description |
+| ------------------------- | ----------- |
+| grandom_generator//1      | Random generator with a intial seed and sequence. |
+| grandom//1                | Random number from 0 to 2^32-1 |
+| grandom_bounded//2        | Random number from 0 to Max-1 |
+| grandom_between//3        | Random number from Min to Max-1 (Max - Min < 2^32) |
+| grandom_list//2           | List of N random numbers from 0 to 2^32-1 |
+| grandom_boundedlist//3    | List of N random numbers from 0 to Max-1 |
+| grandom_betweenlist//4    | List of N random numbers from Min to Max-1 (Max - Min < 2^32) |
+| gprobability/2            | Reifies the truth value of Probability/Precision chance of an event happening into T |
+
+All predicates implemented so far use PCG number generation.
 
 ## How to use
 
-## PCG
+### Predicates
 
 Each predicate (except random_generator/1 ) provides the two initial arguments RandomGenerator and NextRandomGenerator, e.g.:
 
@@ -49,6 +64,49 @@ N2 = 0,
 X3 = pcg32randomt(2638482799351248520, 15726070495360670683),
 L1 = [5, 5, -1, 3, -4].
 ```
+
+### DCGs
+
+For using the DCGs, all you need to do is call `phrase/3` (`phrase/2` won't work, as the dcgs expect to pass state) and call the predicates with their arguments without worrying about passing the number generators. _E.g._:
+
+
+```Prolog
+?- random_generator(X), phrase( ( grandom(A), grandom_bounded(5,B), grandom_betweenlist(-5,10,5,L) ) , [X], Y). 
+X = pcg32randomt(9600629759793949339, 15726070495360670683),
+A = 355248013,
+B = 0,
+L = [5, 5, -1, 3, -4],
+Y = [pcg32randomt(2638482799351248520, 15726070495360670683)].
+```
+
+## Installation
+
+To install ther_random library, type the following in the SWI-Prolog shell:
+
+```Prolog
+? - pack_install('r_random').
+  true.
+```
+or, alternatively, you can install directly from this github repo:
+
+```Prolog
+?- pack_install('https://github.com/LuizFBR/r_random.git').
+  true.
+```
+
+## Importing
+
+Import this module with
+
+```Prolog
+:- use_module(library(r_random)).
+```
+
+## Dependencies
+
+This library depends on Markus Triskas' clpfd library: https://www.swi-prolog.org/man/clpfd.html
+
+And Ulrich Neumerkel's reif package: https://github.com/meditans/reif
 
 ## Credits
 

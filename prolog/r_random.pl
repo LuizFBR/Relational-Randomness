@@ -1,14 +1,21 @@
-:- module(pcg32_pure,
+:- module(r_random,
 [
     random_generator/1,
     random_generator/3,
     random/3,
+    grandom//1,
     random_bounded/4,
+    grandom_bounded//2,
     random_between/5,
+    grandom_between//3,
     random_list/4,
+    grandom_list//2,
     random_boundedlist/5,
+    grandom_boundedlist//3,
     random_betweenlist/6,
-    probability/4
+    grandom_betweenlist//4,
+    probability/4,
+    gprobability//2
 ]).
 
 :- use_module(library(reif)).
@@ -35,16 +42,25 @@ random_generator(InitState, InitSeq, Pcg32randomt) :-
 random(Pcg32randomt, NextPcg32randomt, RandomInt) :-
     pcg32_random_r(Pcg32randomt, NextPcg32randomt, RandomInt).
 
+grandom(RandomInt) --> state( Pcg32randomt, NextPcg32randomt ),
+    { pcg32_random_r(Pcg32randomt, NextPcg32randomt, RandomInt) }.
+
 % Random integer in [0,Max-1].
 random_bounded(Pcg32randomt, NextPcg32randomt, Max, RandomInt) :-
     pcg32_boundedrand_r(Pcg32randomt, NextPcg32randomt, Max, RandomInt).
+
+grandom_bounded(Max,RandomInt) --> state( Pcg32randomt, NextPcg32randomt ),
+    { pcg32_boundedrand_r(Pcg32randomt, NextPcg32randomt, Max, RandomInt) }.
 
 % Random integer in [Min,Max].
 random_between(Pcg32randomt, NextPcg32randomt, Min, Max, RandomInt) :-
     #(Max) - #(Min) #< 2^32, #(Min) #< #(Max),
     #(Bound) #= #(Max) - #(Min),
-    pcg32_boundedrand_r(Pcg32randomt,NextPcg32randomt,Bound,R),
+    pcg32_boundedrand_r(Pcg32randomt, NextPcg32randomt,Bound,R),
     #(RandomInt) #= #(R) + #(Min).
+
+grandom_between(Min, Max, RandomInt) --> state( Pcg32randomt, NextPcg32randomt ),
+    { random_between(Pcg32randomt, NextPcg32randomt, Min, Max, RandomInt) }.
 
 % Relationship between a natural number N and a list of random numbers L such that length(L,N).
 random_list(Pcg32randomt, FinalPcg32randomt, N, RL) :-
@@ -53,10 +69,13 @@ random_list(Pcg32randomt, FinalPcg32randomt, N, RL) :-
        , ( Pcg32randomt = FinalPcg32randomt, RL = [] )
        , ( #(N1) #= #(N) - 1,
            pcg32_random_r(Pcg32randomt, NextPcg32randomt, RandomInt),
-           RL = [RandomInt|RandomInts],
+           RL = [ RandomInt | RandomInts ],
            random_list(NextPcg32randomt, FinalPcg32randomt, N1, RandomInts)
          )
        ).
+
+grandom_list(N, RL) --> state( Pcg32randomt, NextPcg32randomt ),
+    { random_list(Pcg32randomt, NextPcg32randomt, N, RL) }.
 
 % Relationship between a natural number N and a list of random bounded numbers L such that length(L,N).
 random_boundedlist(Pcg32randomt, FinalPcg32randomt, Bound, N, RL) :-
@@ -65,10 +84,13 @@ random_boundedlist(Pcg32randomt, FinalPcg32randomt, Bound, N, RL) :-
        , ( Pcg32randomt = FinalPcg32randomt, RL = [] )
        , ( #(N1) #= #(N) - 1,
            pcg32_boundedrand_r(Pcg32randomt, NextPcg32randomt, Bound, RandomInt),
-           RL = [RandomInt|RandomInts],
+           RL = [ RandomInt | RandomInts ],
            random_boundedlist(NextPcg32randomt, FinalPcg32randomt, Bound, N1, RandomInts)
          )
        ).
+
+grandom_boundedlist(Bound, N, RL) --> state( Pcg32randomt, NextPcg32randomt ),
+    { random_boundedlist(Pcg32randomt, NextPcg32randomt, Bound, N, RL) }.
 
 % Relationship between a natural number N and a list of random numbers between Min and Max) L such that length(L,N).
 random_betweenlist(Pcg32randomt, FinalPcg32randomt, Min, Max, N, RL) :-
@@ -77,20 +99,29 @@ random_betweenlist(Pcg32randomt, FinalPcg32randomt, Min, Max, N, RL) :-
        , ( Pcg32randomt = FinalPcg32randomt, RL = [] )
        , ( #(N1) #= #(N) - 1,
            random_between(Pcg32randomt, NextPcg32randomt, Min, Max, RandomInt),
-           RL = [RandomInt|RandomInts],
+           RL = [ RandomInt | RandomInts ],
            random_betweenlist(NextPcg32randomt, FinalPcg32randomt, Min, Max, N1, RandomInts)
          )
        ).
+    
+grandom_betweenlist(Min, Max, N, RL) --> state( Pcg32randomt, NextPcg32randomt ),
+    { random_betweenlist(Pcg32randomt, NextPcg32randomt, Min, Max, N, RL) }.
 
-% T is reified - if an event with probability Probability/Precision happens, T = true, else T = false.
+% T is reified - if an event with probability Probability/Precision happens, T = 1, else T = 0.
 probability(Pcg32randomt, NextPcg32randomt, Probability/Precision, T) :-
     pcg32_boundedrand_r(Pcg32randomt, NextPcg32randomt, Precision, RandomNumber),
     #(RandomNumber) #=< #(Probability) #<==> #(T).
 
+gprobability(Probability/Precision, T) --> state( Pcg32randomt, NextPcg32randomt ),
+    { probability( Pcg32randomt, NextPcg32randomt, Probability/Precision, T ) }.
+
 % -------------------- private predicates ---------------------------:
 
+% Auxiliary dcgs:
+
+state(S0, S), [S] --> [S0]. % implicitly pass states.
+
 % Random Number Generator
-% pcg32randomt_initstate_initseq_newpcg32randomt(Pcg32randomt,InitState,InitSeq,NextPcg32randomt) :-
 pcg32_srandom_r( InitState, InitSeq, FinalPcg32randomt) :-
     Sup is 2^64 - 1, InitState in 0..Sup, InitSeq in 0..Sup,
     1 #= #(InitSeq) /\ 1,
@@ -100,7 +131,6 @@ pcg32_srandom_r( InitState, InitSeq, FinalPcg32randomt) :-
     pcg32_random_r( pcg32randomt(S3,Inc), FinalPcg32randomt, _).
 
 % Uniformly distributed 32-bit random number:
-% pcg32_random_r(+Pcg32randomt, -NextState, -RandomValue)
 pcg32_random_r( pcg32randomt(OldState,Inc), pcg32randomt(NextState,Inc), RandomValue ) :-
     #(NextState) #= ( ( #(OldState) * 6364136223846793005) + (#(Inc) \/ 1) ) mod (2^64),
     #(XorShifted) #=( ( ( #(OldState) >> 18) xor #(OldState)) >> 27) mod (2^32), % here and in the line below mod 2^32 might be unnecessary, but i'm using it for precaution.
