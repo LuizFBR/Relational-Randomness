@@ -1,6 +1,10 @@
 # Relational-Randomness
 
-Purely relational predicates that implement Pseudo-Random Number Generation (PRNG) and Random Sampling (to-do).
+Purely relational predicates that implement Pseudo-Random Number Generation (PRNG), Random Sampling (to-do) and Noise algorithms (to-do).
+
+### Side-note: 
+
+This project is still in its early versions and things like predicate names and argument ordering are all prone to change. This is not a (and probably will never be) "finished project".
 
 ##### To-do
 
@@ -16,6 +20,8 @@ This package provides the following predicates:
 
 | Predicate          | Description |
 | ------------------ | ----------- |
+| rg/1               | An abbreviation of random_generator/1 |
+| rg/3               | An abbreviation of random_generator/3 |
 | random_generator/1 | A pre-built random generator |
 | random_generator/3 | Random generator with a intial seed and sequence. |
 | random/3           | Random number from 0 to 2^32-1 |
@@ -24,7 +30,7 @@ This package provides the following predicates:
 | random_list/4      | List of N random numbers from 0 to 2^32-1 |
 | random_boundedlist/5   | List of N random numbers from 0 to Max-1 |
 | random_betweenlist/6   | List of N random numbers from Min to Max-1 (Max - Min < 2^32) |
-| probability/4      | Reifies the truth value of Probability/Precision chance of an event happening into T |
+| probability/4      | Reifies the truth value of Probability = Num / Den chance of an event happening into T |
 
 And the following DCGs:
 
@@ -55,7 +61,7 @@ random(Pcg32randomt, NextPcg32randomt, RandomInt) :-
 And to use them you need an instance of a random generator and plug it into the first argument then into the second argument, like so:
 
 ```Prolog
-?- random_generator(X),random(X,X1,N1), random_bounded(X1,X2,5,N2), random_betweenlist(X2,X3,-5,10,5,L1). 
+?- random_generator(X),random(N1,X,X1), random_bounded(5,N2,X1,X2), random_betweenlist(-5,10,5,L1,X2,X3). 
 X = pcg32randomt(9600629759793949339, 15726070495360670683),
 X1 = pcg32randomt(14425053563923168794, 15726070495360670683),
 N1 = 355248013,
