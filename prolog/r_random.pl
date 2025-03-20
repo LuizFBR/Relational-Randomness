@@ -17,12 +17,15 @@
     random_betweenlist/6,
     grandom_betweenlist//4,
     probability/4,
-    gprobability//2
+    gprobability//2,
+    random_permutation/4,
+    grandom_permutation//2
 ]).
 
 :- use_module(library(reif)).
 :- use_module(library(clpfd)).
 :- set_prolog_flag(clpfd_monotonic, true).
+
 
 % reference Minimal C Implementation: https://www.pcg-random.org/download.html
 % PCG: A Family of Simple Fast Space-Efficient Statistically Good Algorithms for Random Number Generation
@@ -96,10 +99,25 @@ probability( Probability/Precision, T, Pcg32randomt, NextPcg32randomt ) :-
     pcg32_boundedrand_r( Precision, RandomNumber, Pcg32randomt, NextPcg32randomt ),
     #(RandomNumber) #=< #(Probability) #<==> #(T).
 
-gprobability(Probability/Precision, T) --> state( Pcg32randomt, NextPcg32randomt ),
+gprobability( Probability/Precision, T ) --> state( Pcg32randomt, NextPcg32randomt ),
     { probability( Probability/Precision, T, Pcg32randomt, NextPcg32randomt ) }.
 
+random_permutation(List, RandomPermutation, Pcg32randomt, NextPcg32randomt) :-
+    key_random(List, Keyed, Pcg32randomt, NextPcg32randomt),
+    keysort(Keyed, Sorted),
+    pairs_values(Sorted, RandomPermutation).
+
+grandom_permutation(List1, List2) --> state( Pcg32randomt, NextPcg32randomt ),
+    { random_permutation(List1, List2, Pcg32randomt, NextPcg32randomt) }.
+
 % -------------------- private predicates ---------------------------:
+
+% random_permutation predicates:
+
+key_random([], [], Pcg32randomt, Pcg32randomt).
+key_random([H|T0], [K-H|T], Pcg32randomt, FinalPcg32randomt) :-
+    random(K, Pcg32randomt, NextPcg32randomt),
+    key_random(T0, T, NextPcg32randomt, FinalPcg32randomt).
 
 % Auxiliary dcgs:
 
@@ -129,7 +147,7 @@ pcg32_boundedrand_r( Bound, Result, Pcg32randomt, NextPcg32randomt ) :-
 
 % Rejection sampling:
 bounded_sample( Bound, Threshold, Result, Pcg32randomt, FinalPcg32randomt ) :-
-    pcg32_random_r(R, Pcg32randomt, NextPcg32randomt),
+    pcg32_random_r( R, Pcg32randomt, NextPcg32randomt ),
     (   #(R) #>= #(Threshold)
     ->  #(Result) #= #(R) mod #(Bound),
         FinalPcg32randomt = NextPcg32randomt

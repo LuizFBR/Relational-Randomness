@@ -30,7 +30,8 @@ This package provides the following predicates:
 | random_list/4      | List of N random numbers from 0 to 2^32-1 |
 | random_boundedlist/5   | List of N random numbers from 0 to Max-1 |
 | random_betweenlist/6   | List of N random numbers from Min to Max-1 (Max - Min < 2^32) |
-| probability/4      | Reifies the truth value of Probability = Num / Den chance of an event happening into T |
+| probability/4          | Reifies the truth value of Probability = Num / Den chance of an event happening into T |
+| random_permutation/4   | Relates a list and one of its random permutation (shuffled) |
 
 And the following DCGs:
 
@@ -44,6 +45,7 @@ And the following DCGs:
 | grandom_boundedlist//3    | List of N random numbers from 0 to Max-1 |
 | grandom_betweenlist//4    | List of N random numbers from Min to Max-1 (Max - Min < 2^32) |
 | gprobability/2            | Reifies the truth value of Probability/Precision chance of an event happening into T |
+| grandom_permutation/4     | Relates a list and one of its random permutation (shuffled) |
 
 All predicates implemented so far use PCG number generation.
 

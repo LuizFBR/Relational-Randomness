@@ -1,5 +1,5 @@
 name(r_random).
-version('0.1.1').
+version('0.2.1').
 title('Purely relational predicates that implement Pseudo-Random Number Generation (PRNG) and Random Sampling (to-do).').
 keywords([pure,purity,relational,random,pcg,sampling,noise]).
 author('Luiz Fernando', 'https://github.com/LuizFBR').
