@@ -56,7 +56,7 @@ All predicates implemented so far use PCG number generation.
 Each predicate (except random_generator/1 ) provides the two initial arguments RandomGenerator and NextRandomGenerator, e.g.:
 
 ```prolog
-random(Pcg32randomt, NextPcg32randomt, RandomInt) :-
+random(RandomInt, Pcg32randomt, NextPcg32randomt) :-
     pcg32_random_r(Pcg32randomt, NextPcg32randomt, RandomInt).
 ```
 
@@ -89,7 +89,7 @@ Y = [pcg32randomt(2638482799351248520, 15726070495360670683)].
 
 ## Installation
 
-To install ther_random library, type the following in the SWI-Prolog shell:
+To install the r_random library, type the following in the SWI-Prolog shell:
 
 ```Prolog
 ? - pack_install('r_random').
